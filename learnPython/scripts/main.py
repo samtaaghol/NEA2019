@@ -19,6 +19,9 @@ def get_screen_dimensions():
     screen = ImageGrab.grab()
     return screen.size
 
+
+
+
 class mainGui(QWidget):
 
     def __init__(self):
@@ -124,6 +127,7 @@ class mainGui(QWidget):
                                                    "font-size : 20pt}"
 
     def init_background(self):
+
         self.r = 240
         self.g = 160
         self.b = 160
@@ -147,12 +151,14 @@ class mainGui(QWidget):
         self.setPalette(p)
 
     def delete_current_widgets(self):
+
         for i in range(len(self.widgets)):
             if type(self.widgets[0]) is not str:
                 self.widgets[0].deleteLater()
             self.widgets.remove(self.widgets[0])
 
     def check_creds(self):
+
         # TODO: write check.
         self.course_selection()
 
@@ -194,6 +200,7 @@ class mainGui(QWidget):
         self.show()
 
     def course_selection(self):
+
         self.delete_current_widgets()
         self.temp_sh = self.sh / 0.75
 
@@ -220,6 +227,7 @@ class mainGui(QWidget):
         self.widgets.append(course)
 
     def load_course(self, course_name):
+
         self.delete_current_widgets()
 
         self.current_line = 0

@@ -1,3 +1,4 @@
-num_apples = 10
-print(num_apples==10)
-
+x = 5
+y = 2
+x * y
+print(x*y == 10)
