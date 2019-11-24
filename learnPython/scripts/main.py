@@ -42,8 +42,8 @@ class mainGui(QWidget):
 
         # Setting the geometry of the screen.
         self.sw, self.sh = get_screen_dimensions()
-        self.sw /= 3
-        self.sh /= 3
+        self.sw /= 1.5
+        self.sh /= 1.5
         self.setFixedSize(self.sw, self.sh)
         self.login_page()
 
