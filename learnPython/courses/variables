@@ -1,0 +1,29 @@
+What is a variable?
+$
+Variables are used to store information in a way which can be manipluated by a computer.
+$
+This provides a way of labeling data.
+$
+In order to assign a value to a variable we use an = sign.
+
+variable = value
+
+$
+Try to assign a variable called num_apples to the value 10. @print(num_apples==10)
+
+$
+You can also add variables together if they are both numbers e.g
+a = 1
+b = 2
+a + b == 3
+$
+Not only can you add you can also perform other operations
+such as;
+    * multiplication
+    + addition
+    - subtraction
+    / division
+    // floor division
+    % modulus
+$
+Try defining two variables x and y as 5 and 2 and multiply them together @print(x*y == 10)

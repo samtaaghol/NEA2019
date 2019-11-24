@@ -1,0 +1,7 @@
+Recursion
+What is recursion?
+Recursion is when a function or subroutine calls itself within the function.
+Here is an example.
+.def recurse():\n   recurse()
+Notice how when you run this you get an infinite recursion error.
+This is because the program does not ever get a chance to break the loop
