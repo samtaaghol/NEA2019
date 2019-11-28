@@ -7,18 +7,24 @@ from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
 from IPython.utils.traitlets import TraitError
 from PyQt5 import QtGui, QtCore
 
+
 def event_loop(kernel):
+
     kernel.timer = QtCore.QTimer()
     kernel.timer.timeout.connect(kernel.do_one_iteration)
     kernel.timer.start(1000*kernel._poll_interval)
 
+
 def default_kernel_app():
+
     app = IPKernelApp.instance()
     app.initialize(['python', '--pylab=qt'])
     app.kernel.eventloop = event_loop
     return app
 
+
 def default_manager(kernel):
+
     connection_file = find_connection_file(kernel.connection_file)
     manager = QtKernelManager(connection_file=connection_file)
     manager.load_connection_file()
@@ -26,7 +32,9 @@ def default_manager(kernel):
     atexit.register(manager.cleanup_connection_file)
     return manager
 
+
 def console_widget(manager):
+
     try: # Ipython v0.13
         widget = RichIPythonWidget(gui_completion='droplist')
     except TraitError:  # IPython v0.12
