@@ -42,12 +42,17 @@ class mainGui(QWidget):
 
         # Setting the geometry of the screen.
         self.sw, self.sh = get_screen_dimensions()
-        self.sw /= 2
-        self.sh /= 2
+        self.sw /= 3
+        self.sh /= 3
         self.setFixedSize(self.sw, self.sh)
+        self.widgets = []
         self.login_page()
 
     def set_style_sheets(self):
+
+        """
+        Sets the style sheets required for the application.
+        """
 
         self.menu_input_style_sheet = "QLineEdit {background-color: rgb(90, 130, 255); " \
                                  "border-radius : 3px;" \
@@ -123,7 +128,21 @@ class mainGui(QWidget):
                                                    "font-family:'Quicksand';" \
                                                    "font-size : 20pt}"
 
+        self.register_style_sheet = "QPushButton {background-color: transparent ;" \
+                                                   "color : rgb(50,100,200);" \
+                                                   "font-family:'Quicksand';" \
+                                                   "font-size : 16pt}" \
+                                      "QPushButton:hover {background-color: transparent ;" \
+                                                   "color : rgb(50,120,220);" \
+                                                   "font-family:'Quicksand';" \
+                                                   "font-size : 16pt}"
+
     def init_background(self):
+
+        """
+        Initialises the interactive background.
+        """
+
         self.r = 240
         self.g = 160
         self.b = 160
@@ -137,6 +156,10 @@ class mainGui(QWidget):
 
     def change_background(self):
 
+        """
+        Changes the background slightly on each keystroke.
+        """
+
         if (self.r + self.Rincrement > 255 or self.r + self.Rincrement < 200): self.Rincrement = -self.Rincrement
         self.r += self.Rincrement
         p = self.palette()
@@ -147,20 +170,41 @@ class mainGui(QWidget):
         self.setPalette(p)
 
     def delete_current_widgets(self):
+
+        """
+        Deletes the current widgets in self.widgets.
+        """
+
         for i in range(len(self.widgets)):
             if type(self.widgets[0]) is not str:
                 self.widgets[0].deleteLater()
             self.widgets.remove(self.widgets[0])
 
     def check_creds(self):
+
+        """
+        Checks the credentials in the username and password widgets.
+        """
+
         # TODO: write check.
         self.course_selection()
+
+    def show_widgets(self):
+
+        """
+        This function shows all the widgets in the current widget buffer.
+        """
+
+        for widget in self.widgets:
+            widget.show()
 
     def login_page(self):
 
         """
         Login page for users.
         """
+
+        self.delete_current_widgets()
 
         button_width = self.sw / 4
         button_height = self.sh / 17
@@ -174,6 +218,7 @@ class mainGui(QWidget):
         title.resize(button_width, button_height)
         title.setGeometry(button_x_offset, y_gap, button_width, button_height*1.5)
         title.setStyleSheet(self.main_title_style_sheet)
+
 
         username = QLineEdit(self)
         username.setGeometry(button_x_offset, y_gap*1.6 + button_height, button_width, button_height)
@@ -189,11 +234,75 @@ class mainGui(QWidget):
         password.setEchoMode(password.Password);
         password.returnPressed.connect(self.check_creds)
 
-        self.widgets = [username, password, title]
+        sign_up = QPushButton("Need an account ?",self)
+        sign_up.setGeometry(button_x_offset, y_gap*1.9 + button_height* 3.2, button_width, button_height)
+        sign_up.setStyleSheet(self.register_style_sheet)
+        sign_up.clicked.connect(self.registration)
 
+
+        self.widgets = [username, password, title, sign_up]
+        self.show_widgets()
         self.show()
 
+    def registration(self):
+
+        """
+        Account registration page is created here.
+        """
+
+        self.delete_current_widgets()
+
+        button_width = self.sw / 4
+        button_height = self.sh / 17
+
+        button_x_offset = (self.sw - button_width) / 2
+
+        empty_y_space = self.sh - button_height * 3
+        y_gap = empty_y_space / 4
+
+        title = QLabel('Sign Up', self)
+        title.resize(button_width, button_height)
+        title.setGeometry(button_x_offset * 1.125, y_gap, button_width, button_height * 1.5)
+        title.setStyleSheet(self.main_title_style_sheet)
+
+        username = QLineEdit(self)
+        username.setGeometry(button_x_offset, y_gap * 1.6 + button_height, button_width, button_height)
+        username.setStyleSheet(self.menu_input_style_sheet)
+        username.setPlaceholderText("Username")
+        username.textChanged.connect(self.change_background)
+        username.returnPressed.connect(self.register)
+
+        password = QLineEdit(self)
+        password.setGeometry(button_x_offset, y_gap * 1.9 + button_height * 2, button_width, button_height)
+        password.setStyleSheet(self.menu_input_style_sheet)
+        password.setPlaceholderText("Password")
+        password.setEchoMode(password.Password);
+        password.returnPressed.connect(lambda: self.register(username.text(), password.text()))
+
+        login = QPushButton("Already have an account ?", self)
+        login.setGeometry(button_x_offset , y_gap * 1.9 + button_height * 3.2, button_width, button_height)
+        login.setStyleSheet(self.register_style_sheet)
+        login.clicked.connect(self.login_page)
+
+        self.widgets = [username, password, login, title]
+        self.show_widgets()
+
+    def register(sel, username, password):
+
+        """
+        Handles the registration of a user.
+        """
+
+        # TODO: write registration class.
+
+
+
     def course_selection(self):
+
+        """
+        Course selection page is created here.
+        """
+
         self.delete_current_widgets()
         self.temp_sh = self.sh / 0.75
 
@@ -205,6 +314,10 @@ class mainGui(QWidget):
 
 
     def create_course(self, course_name, col, row):
+
+        """
+        Creates each individual course widget.
+        """
 
         button_width = self.temp_sh / 5
         x_offset = self.sw / 5
@@ -220,6 +333,11 @@ class mainGui(QWidget):
         self.widgets.append(course)
 
     def load_course(self, course_name):
+
+        """
+        Loads a selected course and creates the page.
+        """
+
         self.delete_current_widgets()
 
         self.current_line = 0
@@ -229,24 +347,18 @@ class mainGui(QWidget):
         self.back_button.setGeometry(5,self.temp_sh/10 - 10 + self.sh/8, self.sw/10-10, self.temp_sh/10)
         self.setStyleSheet(self.back_button_style_sheet)
         self.back_button.pressed.connect(self.course_selection)
-        self.back_button.show()
-        self.widgets.append(self.back_button)
 
         self.next_button = QPushButton("Next", self)
         self.next_button.setGeometry(self.sw - self.sw/10 + 5,self.temp_sh/10 - 10 + self.sh/8, self.sw/10-10, self.temp_sh/10)
         self.setStyleSheet(self.back_button_style_sheet)
         self.next_button.pressed.connect(self.next_line)
-        self.next_button.show()
-        self.widgets.append(self.next_button)
 
         self.tabs = QTabWidget(self)
         self.tabs.setGeometry(self.sw/10,
                          self.temp_sh/2.7,
                          self.sw - (self.sw/5),
                          self.temp_sh/3)
-        self.widgets.append(self.tabs)
 
-        #title = QLabel(self)
         title = QLabel(course_name, self)
         title.setGeometry((self.sw/2 - self.sw/8),
                           10,
@@ -254,17 +366,13 @@ class mainGui(QWidget):
                           self.temp_sh/15)
         title.setStyleSheet(self.course_title_style_sheet)
         title.setAlignment(Qt.AlignCenter)
-        title.show()
-        self.widgets.append(title)
 
         self.code_writer = QCodeWidget(self)
         self.console = QConsole(self)
-        self.widgets.append(self.code_writer)
-        self.widgets.append(self.console)
+
 
         self.tabs.addTab(self.code_writer, "Code")
         self.tabs.addTab(self.console, "Console")
-        self.tabs.show()
 
         run = QPushButton("Run",self)
         #run.setIcon(QIcon(self.root_path + "assets/run.jpg"))
@@ -274,7 +382,6 @@ class mainGui(QWidget):
                         self.temp_sh/20)
         run.setStyleSheet(self.run_button_style_sheet)
         run.pressed.connect(self.run_code)
-        run.show()
 
         self.widgets.append(run)
         print(self.root_path + "courses/" + course_name)
@@ -289,11 +396,18 @@ class mainGui(QWidget):
                          self.sw - (self.sw/5),
                          self.temp_sh/4)
         self.display.setStyleSheet(self.display_style_sheet)
-        self.display.show()
         self.display.setText(" \n" + self.course[0])
-        self.widgets.append(self.display)
+
+        self.widgets = [self.back_button, self.next_button, self.tabs, title,
+                        self.code_writer, self.display, self.console]
+
+        self.show_widgets()
 
     def run_code(self):
+
+        """
+        Runs the code in the code writer widget.
+        """
 
         if not self.question:
             return
@@ -321,10 +435,12 @@ class mainGui(QWidget):
             self.console.setText(">> " + content + "Incorrect")
 
 
-        #for piece in text.split("\n"):
-        #    self.console.append(">> " + piece)
-
     def get_course_name(self, count):
+
+        """
+        Gets course name given the count.
+        """
+
         file_path = self.root_path + "/courses/" + str(count)
         if os.path.isfile(file_path):
             file = open(file_path, 'r')
@@ -334,6 +450,11 @@ class mainGui(QWidget):
             return title
 
     def next_line(self):
+
+        """
+        Outputs the next line on the course file.
+        """
+
         if self.question:
             return
         self.current_line += 1
@@ -353,9 +474,11 @@ class mainGui(QWidget):
 
 
 class QCodeWidget(QPlainTextEdit):
+
     """
     This is a custom made pyqt5 widget which creates a code interface.
     """
+
     def __init__(self, canvas):
 
         QWidget.__init__(self, parent=canvas)
@@ -371,6 +494,11 @@ class QCodeWidget(QPlainTextEdit):
         self.show()
 
     def setStyleSheets(self):
+
+        """
+        Sets the style sheets required for the widgets.
+        """
+
         self.code_writer_style_sheet = "QPlainTextEdit {background-color: rgb(75, 75, 75);" \
                                                   "color: white;" \
                                                   "font-family: 'Inconsolata';" \
@@ -382,6 +510,10 @@ class QCodeWidget(QPlainTextEdit):
 
 
 class QConsole(QTextEdit):
+
+    """
+    Custom made pyqt5 widget which creates a code console.
+    """
 
     def __init__(self, canvas):
         QWidget.__init__(self, parent = canvas)
@@ -395,6 +527,11 @@ class QConsole(QTextEdit):
         self.setReadOnly(True)
 
     def setStyleSheets(self):
+
+        """
+        Sets the style sheets required for the console.
+        """
+
         self.console_style_sheet = "QTextEdit {background-color: rgb(120, 120, 120);" \
                                        "color: white;" \
                                        "font-family: 'SF Mono';" \

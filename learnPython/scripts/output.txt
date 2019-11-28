@@ -1,1 +1,4 @@
-True
+Traceback (most recent call last):
+  File "temp_file.py", line 1, in <module>
+    mfsjknfdgjks
+NameError: name 'mfsjknfdgjks' is not defined

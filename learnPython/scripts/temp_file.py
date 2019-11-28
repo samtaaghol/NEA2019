@@ -1,3 +1,3 @@
-num_apples = 10
+mfsjknfdgjks
 print(num_apples==10)
 

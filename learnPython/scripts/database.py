@@ -10,7 +10,7 @@ class Database():
                                      charset = charset,
                                      cursorclass = cursorclass)
 
-    def insertRow(self,username,passwordHash,email,salt):
+    def insertRow(self, username, passwordHash, email, salt):
         try:
             with self.connection.cursor() as cursor:
                 # Create a new record
@@ -53,20 +53,10 @@ class Database():
 
                     return False
 
-
             self.connection.commit()
 
         except pymysql.err.IntegrityError:
             print('Wrong')
 
-#username = 'samtaaghol'
-#password = 'password123'
-#email = "staaghol123@hotmail123.com"
-#emailQuery = "'staaghol123@hotmail123.com'"
-#usernameQuery = "'samtaaghol'"
-
-db = Database('localhost','root','rootpassword','database','utf8mb4', pymysql.cursors.DictCursor)
+db = Database('localhost','root','rootpassword','NEA2019','utf8mb4', pymysql.cursors.DictCursor)
 usernameQuery = "taaghols"
-#db.insertRow(passwords,usernames,emails)
-#db.deleteRow(emailQuery)
-#db.getDetails(usernameQuery)
