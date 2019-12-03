@@ -7,8 +7,11 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 def format(color, style=''):
-    """Return a QTextCharFormat with the given attributes.
+
     """
+    Return a QTextCharFormat with the given attributes.
+    """
+
     _color = QColor()
     _color.setNamedColor(color)
 
@@ -115,8 +118,11 @@ class PythonHighlighter (QSyntaxHighlighter):
 
 
     def highlightBlock(self, text):
-        """Apply syntax highlighting to the given block of text.
+
         """
+        Apply syntax highlighting to the given block of text.
+        """
+
         # Do other syntax formatting
         for expression, nth, format in self.rules:
             index = expression.indexIn(text, 0)
@@ -137,12 +143,14 @@ class PythonHighlighter (QSyntaxHighlighter):
 
 
     def match_multiline(self, text, delimiter, in_state, style):
+
         """Do highlighting of multi-line strings. ``delimiter`` should be a
         ``QRegExp`` for triple-single-quotes or triple-double-quotes, and
         ``in_state`` should be a unique integer to represent the corresponding
         state changes when inside those strings. Returns True if we're still
         inside a multi-line string when this function is finished.
         """
+
         # If inside triple-single quotes, start at 0
         if self.previousBlockState() == in_state:
             start = 0

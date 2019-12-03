@@ -35,10 +35,12 @@ class mainGui(QWidget):
         super().__init__()
 
         self.root_path = os.path.dirname(os.path.abspath(__file__))[0:-7]
+        self.database = Database('localhost', 'root', 'rootpassword', 'NEA2019', 'utf8mb4', pymysql.cursors.DictCursor)
 
         self.title = 'Learn Python'
         self.titleFont = QFont('American Typewriter Light', 60, QFont.Bold)
         self.promptFont = QFont('Palatino', 20)
+        self.username = ""
 
         # Set window background color
         self.setAutoFillBackground(True)
@@ -72,6 +74,18 @@ class mainGui(QWidget):
                                  "selection-background-color: rgb(165, 135, 0);" \
                                  "selection-color: rgb(20, 20, 20)}"
 
+        self.wrong_menu_input_style_sheet = "QLineEdit {background-color: rgb(90, 130, 255); " \
+                                      "border-radius : 3px;" \
+                                      "border-style: solid;" \
+                                      "border-width: 2;" \
+                                      "border-color: rgb(220, 100, 100);" \
+                                      "color: rgb(230, 230, 230);" \
+                                      "font-size: 15pt;" \
+                                      "font-family: 'Quicksand';" \
+                                      "font-weight: light;" \
+                                      "selection-background-color: rgb(165, 135, 0);" \
+                                      "selection-color: rgb(20, 20, 20)}"
+
         self.main_title_style_sheet = "QLabel {font-size: 50pt}"
 
         self.margin_style_sheet = "QLabel {background-color: rgb(20, 50 ,130)}"
@@ -88,6 +102,7 @@ class mainGui(QWidget):
                                                         "border-width : 5px;" \
                                                         "border-radius: 20px;" \
                                                         "border-color: black}"
+
         self.course_title_style_sheet = "QLabel {color: white;" \
                                                 "font-size : 30px;" \
                                                 "background-color: rgb(90, 130, 255);" \
@@ -192,16 +207,23 @@ class mainGui(QWidget):
         Checks the credentials in the username and password widgets.
         """
 
-        db = Database('localhost', 'root', 'rootpassword', 'NEA2019', 'utf8mb4', pymysql.cursors.DictCursor)
 
-        details = db.getDetails("credentials", username)
-        if not details:
-             # TODO: write display output thing.
-            pass
+
+        details = self.database.getDetails("credentials", username)
+
+        if details == None:
+            self.username.setStyleSheet(self.wrong_menu_input_style_sheet)
+            return
+
         hashed, salt = details['password'], details['salt']
 
         if hash_string(password + salt) == hashed:
+            self.username = username
             self.course_selection()
+
+        else:
+            self.username.setStyleSheet(self.wrong_menu_input_style_sheet)
+            self.password.setStyleSheet(self.wrong_menu_input_style_sheet)
 
     def show_widgets(self):
 
@@ -234,28 +256,27 @@ class mainGui(QWidget):
         title.setStyleSheet(self.main_title_style_sheet)
 
 
-        username = QLineEdit(self)
-        username.setGeometry(button_x_offset, y_gap*1.6 + button_height, button_width, button_height)
-        username.setStyleSheet(self.menu_input_style_sheet)
-        username.setPlaceholderText("Username")
-        username.textChanged.connect(self.change_background)
+        self.username = QLineEdit(self)
+        self.username.setGeometry(button_x_offset, y_gap*1.6 + button_height, button_width, button_height)
+        self.username.setStyleSheet(self.menu_input_style_sheet)
+        self.username.setPlaceholderText("Username")
+        self.username.textChanged.connect(self.change_background)
 
-        password = QLineEdit(self)
-        password.setGeometry(button_x_offset, y_gap*1.9 + button_height*2, button_width, button_height)
-        password.setStyleSheet(self.menu_input_style_sheet)
-        password.setPlaceholderText("Password")
-        password.setEchoMode(password.Password);
-
+        self.password = QLineEdit(self)
+        self.password.setGeometry(button_x_offset, y_gap*1.9 + button_height*2, button_width, button_height)
+        self.password.setStyleSheet(self.menu_input_style_sheet)
+        self.password.setPlaceholderText("Password")
+        self.password.setEchoMode(self.password.Password);
 
         sign_up = QPushButton("Need an account ?",self)
         sign_up.setGeometry(button_x_offset, y_gap*1.9 + button_height* 3.2, button_width, button_height)
         sign_up.setStyleSheet(self.register_style_sheet)
         sign_up.clicked.connect(self.registration)
 
-        username.returnPressed.connect(lambda: self.check_creds(username.text(), password.text()))
-        password.returnPressed.connect(lambda: self.check_creds(username.text(), password.text()))
+        self.username.returnPressed.connect(lambda: self.check_creds(self.username.text(), self.password.text()))
+        self.password.returnPressed.connect(lambda: self.check_creds(self.username.text(), self.password.text()))
 
-        self.widgets = [username, password, title, sign_up]
+        self.widgets = [self.username, self.password, title, sign_up]
         self.show_widgets()
         self.show()
 
@@ -280,26 +301,27 @@ class mainGui(QWidget):
         title.setGeometry(button_x_offset * 1.125, y_gap, button_width, button_height * 1.5)
         title.setStyleSheet(self.main_title_style_sheet)
 
-        username = QLineEdit(self)
-        username.setGeometry(button_x_offset, y_gap * 1.6 + button_height, button_width, button_height)
-        username.setStyleSheet(self.menu_input_style_sheet)
-        username.setPlaceholderText("Username")
-        username.textChanged.connect(self.change_background)
-        username.returnPressed.connect(lambda: self.register(username.text(), password.text()))
+        self.username = QLineEdit(self)
+        self.username.setGeometry(button_x_offset, y_gap * 1.6 + button_height, button_width, button_height)
+        self.username.setStyleSheet(self.menu_input_style_sheet)
+        self.username.setPlaceholderText("Username")
+        self.username.textChanged.connect(self.change_background)
 
-        password = QLineEdit(self)
-        password.setGeometry(button_x_offset, y_gap * 1.9 + button_height * 2, button_width, button_height)
-        password.setStyleSheet(self.menu_input_style_sheet)
-        password.setPlaceholderText("Password")
-        password.setEchoMode(password.Password);
-        password.returnPressed.connect(lambda: self.register(username.text(), password.text()))
+        self.password = QLineEdit(self)
+        self.password.setGeometry(button_x_offset, y_gap * 1.9 + button_height * 2, button_width, button_height)
+        self.password.setStyleSheet(self.menu_input_style_sheet)
+        self.password.setPlaceholderText("Password")
+        self.password.setEchoMode(self.password.Password);
+
+        self.username.returnPressed.connect(lambda: self.register(self.username.text(), self.password.text()))
+        self.password.returnPressed.connect(lambda: self.register(self.username.text(), self.password.text()))
 
         login = QPushButton("Already have an account ?", self)
-        login.setGeometry(button_x_offset , y_gap * 1.9 + button_height * 3.2, button_width, button_height)
+        login.setGeometry(button_x_offset, y_gap * 1.9 + button_height * 3.2, button_width, button_height)
         login.setStyleSheet(self.register_style_sheet)
         login.clicked.connect(self.login_page)
 
-        self.widgets = [username, password, login, title]
+        self.widgets = [self.username, self.password, login, title]
         self.show_widgets()
 
     def register(self, username, password):
@@ -308,19 +330,23 @@ class mainGui(QWidget):
         Handles the registration of a user.
         """
 
-        db = Database('localhost', 'root', 'rootpassword', 'NEA2019', 'utf8mb4', pymysql.cursors.DictCursor)
+        if len(username) < 8:
+            self.username.setStyleSheet(self.wrong_menu_input_style_sheet)
 
-        if not db.getDetails(username):
+        if len(password) < 8:
+            self.username.setStyleSheet(self.wrong_menu_input_style_sheet)
+
+
+        if not self.database.getDetails("credentials", username):
 
             salt = ''.join(random.sample(string.ascii_lowercase, 10))
 
-            db.insertRow("credentials", username, hash_string(password + salt), salt)
+            self.database.insertRow("credentials", username, hash_string(password + salt), salt)
 
             self.course_selection()
 
-        # TODO: write registration class.
-
-
+        else:
+            self.username.setStyleSheet(self.wrong_menu_input_style_sheet)
 
     def course_selection(self):
 
@@ -336,7 +362,6 @@ class mainGui(QWidget):
         self.create_course("functions", 1, 0)
         self.create_course("classes", 2, 0)
         self.create_course("recursion", 3, 0)
-
 
     def create_course(self, course_name, col, row):
 
@@ -423,7 +448,7 @@ class mainGui(QWidget):
         self.display.setStyleSheet(self.display_style_sheet)
         self.display.setText(" \n" + self.course[0])
 
-        self.widgets = [self.back_button, self.next_button, self.tabs, title,
+        self.widgets = [run, self.back_button, self.next_button, self.tabs, title,
                         self.code_writer, self.display, self.console]
 
         self.show_widgets()
