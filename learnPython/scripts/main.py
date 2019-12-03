@@ -9,6 +9,11 @@ import subprocess
 import sys
 import code
 import subprocess
+from HashingAlgorithm import hash_string
+from database import Database
+import pymysql
+import string
+import random
 
 def get_screen_dimensions():
 
@@ -17,6 +22,7 @@ def get_screen_dimensions():
     """
 
     screen = ImageGrab.grab()
+
     return screen.size
 
 class mainGui(QWidget):
@@ -180,14 +186,22 @@ class mainGui(QWidget):
                 self.widgets[0].deleteLater()
             self.widgets.remove(self.widgets[0])
 
-    def check_creds(self):
+    def check_creds(self, username, password):
 
         """
         Checks the credentials in the username and password widgets.
         """
 
-        # TODO: write check.
-        self.course_selection()
+        db = Database('localhost', 'root', 'rootpassword', 'NEA2019', 'utf8mb4', pymysql.cursors.DictCursor)
+
+        details = db.getDetails("credentials", username)
+        if not details:
+             # TODO: write display output thing.
+            pass
+        hashed, salt = details['password'], details['salt']
+
+        if hash_string(password + salt) == hashed:
+            self.course_selection()
 
     def show_widgets(self):
 
@@ -225,20 +239,21 @@ class mainGui(QWidget):
         username.setStyleSheet(self.menu_input_style_sheet)
         username.setPlaceholderText("Username")
         username.textChanged.connect(self.change_background)
-        username.returnPressed.connect(self.check_creds)
 
         password = QLineEdit(self)
         password.setGeometry(button_x_offset, y_gap*1.9 + button_height*2, button_width, button_height)
         password.setStyleSheet(self.menu_input_style_sheet)
         password.setPlaceholderText("Password")
         password.setEchoMode(password.Password);
-        password.returnPressed.connect(self.check_creds)
+
 
         sign_up = QPushButton("Need an account ?",self)
         sign_up.setGeometry(button_x_offset, y_gap*1.9 + button_height* 3.2, button_width, button_height)
         sign_up.setStyleSheet(self.register_style_sheet)
         sign_up.clicked.connect(self.registration)
 
+        username.returnPressed.connect(lambda: self.check_creds(username.text(), password.text()))
+        password.returnPressed.connect(lambda: self.check_creds(username.text(), password.text()))
 
         self.widgets = [username, password, title, sign_up]
         self.show_widgets()
@@ -270,7 +285,7 @@ class mainGui(QWidget):
         username.setStyleSheet(self.menu_input_style_sheet)
         username.setPlaceholderText("Username")
         username.textChanged.connect(self.change_background)
-        username.returnPressed.connect(self.register)
+        username.returnPressed.connect(lambda: self.register(username.text(), password.text()))
 
         password = QLineEdit(self)
         password.setGeometry(button_x_offset, y_gap * 1.9 + button_height * 2, button_width, button_height)
@@ -287,11 +302,21 @@ class mainGui(QWidget):
         self.widgets = [username, password, login, title]
         self.show_widgets()
 
-    def register(sel, username, password):
+    def register(self, username, password):
 
         """
         Handles the registration of a user.
         """
+
+        db = Database('localhost', 'root', 'rootpassword', 'NEA2019', 'utf8mb4', pymysql.cursors.DictCursor)
+
+        if not db.getDetails(username):
+
+            salt = ''.join(random.sample(string.ascii_lowercase, 10))
+
+            db.insertRow("credentials", username, hash_string(password + salt), salt)
+
+            self.course_selection()
 
         # TODO: write registration class.
 

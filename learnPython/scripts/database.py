@@ -2,7 +2,15 @@ import pymysql
 
 class Database():
 
-    def __init__(self,host,user,password,db,charset,cursorclass):
+    """
+    General database class works for multiple databases and databases with multiple tables.
+
+    Assumes when a row is inserted every column will receive a new value.
+    """
+
+    def __init__(self, host, user, password, db, charset, cursorclass, primary_key = "username"):
+
+        self.table_columns = []
 
         self.connection = pymysql.connect(host = host,
                                      user = user,
@@ -11,53 +19,82 @@ class Database():
                                      charset = charset,
                                      cursorclass = cursorclass)
 
-    def insertRow(self, username, passwordHash, email, salt):
+        self.primary_key = primary_key
+
+
+    def setTable(self, table):
+
         try:
             with self.connection.cursor() as cursor:
-                # Create a new record
-                sql = "INSERT INTO `users` (`usernames`,`passwords`,`emails`,`salt`) VALUES (%s, %s, %s, %s)"
-                cursor.execute(sql, (username, passwordHash, email, salt))
+
+                cursor.execute("SHOW columns FROM " + table)
+
+                for dictionary in cursor.fetchall():
+
+                    self.table_columns.append(dictionary['Field'])
+        except:
+
+            print("incorrect table name.")
+
+    def insertRow(self, table, *args):
+
+        self.setTable(table)
+
+        if len(args) != len(self.table_columns):
+
+            return False
+
+        try:
+            with self.connection.cursor() as cursor:
+
+                sql = "INSERT INTO `" + table + "`("
+
+                for column in self.table_columns:
+
+                    sql += "`" + column + "`,"
+
+                sql = sql[:-1] + ") VALUES ("
+
+                for column in self.table_columns:
+
+                    sql += "%s,"
+
+                sql = sql[:-1] + ")"
+
+                cursor.execute(sql, args)
 
             self.connection.commit()
+
         except pymysql.err.IntegrityError:
             print('Wrong')
 
-    def deleteRow(self,email):
+    def getDetails(self, table, key_value):
+
+        self.setTable(table)
 
         try:
             with self.connection.cursor() as cursor:
 
-                sql = "DELETE FROM `users` WHERE `emails` = " + email + ";"
+                columns_to_return = ""
+
+                for column in self.table_columns:
+
+                    if column != self.primary_key:
+
+                        columns_to_return += "`" + column + "`,"
+
+                sql = "SELECT " + columns_to_return[:-1] + " FROM `" + table + "` WHERE `" + self.primary_key + "` = '" + key_value + "'"
+
+                print(sql)
+
                 cursor.execute(sql)
-            self.connection.commit()
 
-        except pymysql.err.IntegrityError:
-            print('Wrong')
+                details = []
 
-    def getDetails(self,username):
-        try:
-            with self.connection.cursor() as cursor:
-
-                sql = "SELECT `passwords` FROM `users` WHERE `usernames` = %s "
-                cursor.execute(sql, username)
-                for row in cursor:
-                    #print(row['passwords'])
-                    passwordHash = row['passwords']
-                sql = "SELECT `salt` FROM `users` WHERE `usernames` = %s "
-                cursor.execute(sql, username)
-                for row in cursor:
-                    salt = row['salt']
-                try:
-                    return passwordHash, salt
-
-                except UnboundLocalError:
-
-                    return False
+                return cursor.fetchone()
 
             self.connection.commit()
 
         except pymysql.err.IntegrityError:
-            print('Wrong')
 
-db = Database('localhost','root','rootpassword','NEA2019','utf8mb4', pymysql.cursors.DictCursor)
-usernameQuery = "taaghols"
+            print('Wrong')
