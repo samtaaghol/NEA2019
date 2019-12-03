@@ -90,17 +90,21 @@ class mainGui(QWidget):
 
         self.margin_style_sheet = "QLabel {background-color: rgb(20, 50 ,130)}"
 
-        self.course_button_style_sheets = "QPushButton {background-color: rgb(200,100,100);" \
+        # "color: white;" \
+        self.course_button_style_sheets = "QPushButton {background-color: rgb(90, 130, 255);" \
+                                                        "font-size : 15px;"\
                                                         "color: white;" \
                                                         "font-family: 'Quicksand';" \
                                                         "border-width : 5px;" \
                                                         "border-color: black;" \
-                                                        "border-radius: 38px}" \
-                                          "QPushButton:hover {background-color: rgb(180, 90, 90);" \
-                                                        "color: white;" \
-                                                        "font-family: 'Quicksand';" \
+                                                        "border-radius: 30px}" \
+                                          "QPushButton:hover {background-color: rgb(253, 253, 102);" \
+                                                        "font-size : 15px;" \
+                                                        "color: rgb(75,0,130);" \
+                                                        "font-family: 'Comic Sans MS';" \
+                                                        "font-weight: bold;" \
                                                         "border-width : 5px;" \
-                                                        "border-radius: 20px;" \
+                                                        "border-radius: 30px;" \
                                                         "border-color: black}"
 
         self.course_title_style_sheet = "QLabel {color: white;" \
@@ -181,7 +185,11 @@ class mainGui(QWidget):
         Changes the background slightly on each keystroke.
         """
 
-        if (self.r + self.Rincrement > 255 or self.r + self.Rincrement < 200): self.Rincrement = -self.Rincrement
+        if (self.r + self.Rincrement > 255 or self.r + self.Rincrement < 200):
+            self.Rincrement = -self.Rincrement
+
+        print(self.r)
+
         self.r += self.Rincrement
         p = self.palette()
         gradient = QLinearGradient(0, 0, 0, 400)
@@ -266,6 +274,7 @@ class mainGui(QWidget):
         self.password.setGeometry(button_x_offset, y_gap*1.9 + button_height*2, button_width, button_height)
         self.password.setStyleSheet(self.menu_input_style_sheet)
         self.password.setPlaceholderText("Password")
+        self.password.textChanged.connect(self.change_background)
         self.password.setEchoMode(self.password.Password);
 
         sign_up = QPushButton("Need an account ?",self)
@@ -362,6 +371,17 @@ class mainGui(QWidget):
         self.create_course("functions", 1, 0)
         self.create_course("classes", 2, 0)
         self.create_course("recursion", 3, 0)
+        self.create_course("iteration", 4, 0)
+        self.create_course("web scraping", 0, 1)
+        self.create_course("imports", 1, 1)
+        self.create_course("time", 2, 1)
+        self.create_course("pygame", 3, 1)
+        self.create_course("open-cv", 4, 1)
+        self.create_course("objects", 0, -1)
+        self.create_course("inheritance", 1, -1)
+        self.create_course("code style", 2, -1)
+        self.create_course("comments", 3, -1)
+        self.create_course("sorting", 4, -1)
 
     def create_course(self, course_name, col, row):
 
@@ -373,7 +393,7 @@ class mainGui(QWidget):
         x_offset = self.sw / 5
 
         course = QPushButton(course_name, self)
-        course.setGeometry(col * button_width + (self.sw - (5 * button_width)) / 2,  # x
+        course.setGeometry(col * button_width + (self.sw - (4.8 * button_width)) / 2,  # x
                            row * button_width + (self.temp_sh * 1.5 - (5 * button_width)) / 2,  # y
                            button_width / 1.2,  # width
                            button_width / 1.2)  # height
