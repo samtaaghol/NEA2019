@@ -14,6 +14,8 @@ from database import Database
 import pymysql
 import string
 import random
+import pygame
+from examples import *
 
 def get_screen_dimensions():
 
@@ -40,7 +42,7 @@ class mainGui(QWidget):
         self.title = 'Learn Python'
         self.titleFont = QFont('American Typewriter Light', 60, QFont.Bold)
         self.promptFont = QFont('Palatino', 20)
-        self.username = ""
+        self.profile_name = ""
 
         # Set window background color
         self.setAutoFillBackground(True)
@@ -54,7 +56,21 @@ class mainGui(QWidget):
         self.sh /= 3
         self.setFixedSize(self.sw, self.sh)
         self.widgets = []
+
         self.login_page()
+
+    def mouseMoveEvent(self, e):
+
+        self.r = 240
+        self.g = 160
+        self.b = 160
+
+        p = self.palette()
+        gradient = QLinearGradient(0, 0, 0, abs(e.y()))
+        gradient.setColorAt(0.0, QColor(150, 200, 250))
+        gradient.setColorAt(1.0, QColor(self.r, self.g, self.b))
+        p.setBrush(self.backgroundRole(), QBrush(gradient))
+        self.setPalette(p)
 
     def set_style_sheets(self):
 
@@ -71,7 +87,7 @@ class mainGui(QWidget):
                                  "font-size: 15pt;" \
                                  "font-family: 'Quicksand';" \
                                  "font-weight: light;" \
-                                 "selection-background-color: rgb(165, 135, 0);" \
+                                 "selection-background-color: rgb(200, 200, 255);" \
                                  "selection-color: rgb(20, 20, 20)}"
 
         self.wrong_menu_input_style_sheet = "QLineEdit {background-color: rgb(90, 130, 255); " \
@@ -83,7 +99,7 @@ class mainGui(QWidget):
                                       "font-size: 15pt;" \
                                       "font-family: 'Quicksand';" \
                                       "font-weight: light;" \
-                                      "selection-background-color: rgb(165, 135, 0);" \
+                                      "selection-background-color: rgb(200, 200, 255);" \
                                       "selection-color: rgb(20, 20, 20)}"
 
         self.main_title_style_sheet = "QLabel {font-size: 50pt}"
@@ -98,11 +114,10 @@ class mainGui(QWidget):
                                                         "border-width : 5px;" \
                                                         "border-color: black;" \
                                                         "border-radius: 30px}" \
-                                          "QPushButton:hover {background-color: rgb(253, 253, 102);" \
+                                          "QPushButton:hover {background-color: rgb(255,127,80);" \
                                                         "font-size : 15px;" \
-                                                        "color: rgb(75,0,130);" \
-                                                        "font-family: 'Comic Sans MS';" \
-                                                        "font-weight: bold;" \
+                                                        "color: white;" \
+                                                        "font-family: 'Quicksand';" \
                                                         "border-width : 5px;" \
                                                         "border-radius: 30px;" \
                                                         "border-color: black}"
@@ -162,6 +177,21 @@ class mainGui(QWidget):
                                                    "font-family:'Quicksand';" \
                                                    "font-size : 16pt}"
 
+        self.main_menu_button_style_sheet = "QPushButton {background-color: rgb(90, 130, 255);" \
+                                                        "font-size : 15px;"\
+                                                        "color: white;" \
+                                                        "font-family: 'Quicksand';" \
+                                                        "border-width : 5px;" \
+                                                        "border-color: black;" \
+                                                        "border-radius: 3px}" \
+                                            "QPushButton:hover {background-color: rgb(173, 216, 255);" \
+                                                        "font-size : 15px;" \
+                                                        "color: white;" \
+                                                        "font-family: 'Quicksand';" \
+                                                        "border-width : 5px;" \
+                                                        "border-radius: 3px;" \
+                                                        "border-color: black}"
+
     def init_background(self):
 
         """
@@ -179,16 +209,25 @@ class mainGui(QWidget):
         p.setBrush(self.backgroundRole(), QBrush(gradient))
         self.setPalette(p)
 
+    def create_back_button(self, prev_page):
+
+        backbutton = QPushButton("Back", self)
+        backbutton.setGeometry(5,
+                               5,
+                               self.sw/10,
+                               self.sh/20)
+        backbutton.setStyleSheet(self.main_menu_button_style_sheet)
+        backbutton.pressed.connect(prev_page)
+        self.widgets.append(backbutton)
+
     def change_background(self):
 
         """
         Changes the background slightly on each keystroke.
         """
 
-        if (self.r + self.Rincrement > 255 or self.r + self.Rincrement < 200):
+        if (self.r + self.Rincrement > 255 or self.r + self.Rincrement < 0):
             self.Rincrement = -self.Rincrement
-
-        print(self.r)
 
         self.r += self.Rincrement
         p = self.palette()
@@ -215,8 +254,6 @@ class mainGui(QWidget):
         Checks the credentials in the username and password widgets.
         """
 
-
-
         details = self.database.getDetails("credentials", username)
 
         if details == None:
@@ -226,8 +263,10 @@ class mainGui(QWidget):
         hashed, salt = details['password'], details['salt']
 
         if hash_string(password + salt) == hashed:
-            self.username = username
-            self.course_selection()
+            self.setMouseTracking(True)
+            self.init_background()
+            self.profile_name = username
+            self.main_menu()
 
         else:
             self.username.setStyleSheet(self.wrong_menu_input_style_sheet)
@@ -263,7 +302,6 @@ class mainGui(QWidget):
         title.setGeometry(button_x_offset, y_gap, button_width, button_height*1.5)
         title.setStyleSheet(self.main_title_style_sheet)
 
-
         self.username = QLineEdit(self)
         self.username.setGeometry(button_x_offset, y_gap*1.6 + button_height, button_width, button_height)
         self.username.setStyleSheet(self.menu_input_style_sheet)
@@ -277,6 +315,9 @@ class mainGui(QWidget):
         self.password.textChanged.connect(self.change_background)
         self.password.setEchoMode(self.password.Password);
 
+        self.password_shower = QCheckBox(self)
+        self.password_shower.move(button_x_offset + button_width, y_gap * 1.9 + button_height * 2.3)
+
         sign_up = QPushButton("Need an account ?",self)
         sign_up.setGeometry(button_x_offset, y_gap*1.9 + button_height* 3.2, button_width, button_height)
         sign_up.setStyleSheet(self.register_style_sheet)
@@ -284,10 +325,157 @@ class mainGui(QWidget):
 
         self.username.returnPressed.connect(lambda: self.check_creds(self.username.text(), self.password.text()))
         self.password.returnPressed.connect(lambda: self.check_creds(self.username.text(), self.password.text()))
+        self.password_shower.stateChanged.connect(self.show_password)
 
-        self.widgets = [self.username, self.password, title, sign_up]
+        self.widgets = [self.username, self.password, title, sign_up, self.password_shower]
         self.show_widgets()
         self.show()
+
+    def show_password(self):
+
+        """
+        Shows the password when activated.
+        """
+
+        if self.password_shower.isChecked():
+            self.password.setEchoMode(self.password.Normal)
+        else:
+            self.password.setEchoMode(self.password.Password)
+
+    def main_menu(self):
+
+        """
+        Main menu where the user can decide what to do.
+        """
+
+        self.delete_current_widgets()
+
+        button_width = self.sw / 4
+        button_height = self.sh / 17
+
+        button_x_offset = (self.sw - button_width) / 2
+
+        empty_y_space = self.sh - button_height * 3
+        y_gap = empty_y_space / 4
+
+        self.courses = QPushButton("Courses",self)
+        self.courses.setGeometry(button_x_offset, y_gap * 1.4 + button_height, button_width, button_height)
+        self.courses.setStyleSheet(self.main_menu_button_style_sheet)
+        self.courses.pressed.connect(self.course_selection)
+
+        self.league_table = QPushButton("Leaderboard", self)
+        self.league_table.setGeometry(button_x_offset, y_gap * 1.6 + button_height * 2, button_width, button_height)
+        self.league_table.setStyleSheet(self.main_menu_button_style_sheet)
+        self.league_table.pressed.connect(self.leaderboard)
+
+        self.examples = QPushButton("Examples", self)
+        self.examples.setGeometry(button_x_offset, y_gap * 1.8 + button_height * 3, button_width, button_height)
+        self.examples.setStyleSheet(self.main_menu_button_style_sheet)
+        self.examples.pressed.connect(self.examples_menu)
+
+        self.settings = QPushButton("Settings", self)
+        self.settings.setGeometry(button_x_offset, y_gap * 2.0 + button_height * 4, button_width, button_height)
+        self.settings.setStyleSheet(self.main_menu_button_style_sheet)
+        self.settings.pressed.connect(self.change_background)
+
+        self.widgets = [self.courses, self.examples, self.settings, self.league_table]
+        self.create_back_button(self.login_page)
+        self.show_widgets()
+
+    def examples_menu(self):
+
+        """
+        Example applications are shown here.
+        """
+
+        button_width = self.sw / 4
+        button_height = self.sh / 17
+
+        button_x_offset = (self.sw - button_width) / 2
+
+        empty_y_space = self.sh - button_height * 3
+        y_gap = empty_y_space / 4
+
+        self.delete_current_widgets()
+
+        self.queens = QPushButton("8 Queens problem", self)
+        self.queens.setGeometry(button_x_offset, y_gap * 1.4 + button_height, button_width, button_height)
+        self.queens.setStyleSheet(self.main_menu_button_style_sheet)
+        self.queens.pressed.connect(self.eight_queens_test)
+
+        self.dijkstra = QPushButton("Dijkstras algorithm", self)
+        self.dijkstra.setGeometry(button_x_offset, y_gap * 1.6 + button_height * 2, button_width , button_height)
+        self.dijkstra.setStyleSheet(self.main_menu_button_style_sheet)
+        self.dijkstra.pressed.connect(self.eight_queens)
+
+        self.bubble_sort = QPushButton("Bubble sort", self)
+        self.bubble_sort.setGeometry(button_x_offset, y_gap * 1.8 + button_height * 3, button_width, button_height)
+        self.bubble_sort.setStyleSheet(self.main_menu_button_style_sheet)
+        self.bubble_sort.pressed.connect(self.eight_queens)
+
+        self.widgets = [self.queens, self.dijkstra, self.bubble_sort]
+        self.create_back_button(self.main_menu)
+        self.show_widgets()
+
+    def eight_queens_test(self):
+
+        """
+        This function sets up the eight queens lesson.
+        """
+
+        self.display = QTextEdit(self)
+        self.display.setReadOnly(True)
+        self.display.setGeometry(self.sw/15,
+                                 self.sh/7,
+                                 self.sw - (self.sw / 7.5),
+                                 self.sh / 1.5)
+        self.display.setPlainText("Difficulty : 5  requires knowledge of functions, recursion, objects" +
+                                  "\n" + "The 8 queen problem involes putting 8 queens on the board where they each don't attack each other." +
+                                  "\n" + "\n" + "The queen can move diagonally and horizontally/vertically" +
+                                  "\n" + "\n" +  "The chess board is 8x8." +
+                                  "\n" + "\n" +  "Here is a simulation of the Recursive algorithm I wrote. You will then asked" +
+                                  "\n" + "questions about the code which will be provide.")
+
+
+        self.display.setStyleSheet(self.display_style_sheet)
+
+        self.widgets = [self.display]
+
+        self.show_widgets()
+
+    def eight_queens(self):
+
+        self.delete_current_widgets()
+
+        try:
+            eightQueensGUI()
+        except pygame.error:
+            pass
+
+        code = QCodeWidget(self)
+        code.setPlainText("""    def recursivley_solve(self):
+        for x in range(8):
+            for y in range(8):
+                if not self.game.in_check(x, y):
+                    # choose
+                    self.game.add_queen(x, y)
+
+                    self.board_positions.append(str(self.game.board))
+                    # explore
+                    self.recursivley_solve()
+                    if self.game.queen_count == 8:
+                        return
+                    # unchoose
+                    self.game.remove_queen(x, y)""")
+        code.setGeometry(self.sw/15,
+                         self.sh/7,
+                         self.sw - (self.sw / 7.5),
+                         self.sh / 1.5)
+
+        self.widgets = [code, self.display]
+        self.create_back_button(self.examples_menu)
+        self.show_widgets()
+
 
     def registration(self):
 
@@ -322,16 +510,41 @@ class mainGui(QWidget):
         self.password.setPlaceholderText("Password")
         self.password.setEchoMode(self.password.Password);
 
+        self.password_shower = QCheckBox(self)
+        self.password_shower.move(button_x_offset + button_width, y_gap * 1.9 + button_height * 2.3)
+
         self.username.returnPressed.connect(lambda: self.register(self.username.text(), self.password.text()))
         self.password.returnPressed.connect(lambda: self.register(self.username.text(), self.password.text()))
 
+        self.phone_slider = QSlider(Qt.Horizontal, self)
+        self.phone_slider.setMinimum(100000000)
+        self.phone_slider.setMaximum(999999999)
+        self.phone_slider.setGeometry(button_x_offset, y_gap * 1.9 + button_height * 5, button_width, button_height)
+        self.phone_slider.valueChanged.connect(self.update_slider)
+
+        self.phone_label = QLineEdit(self)
+        self.phone_label.setPlaceholderText("Phone Number")
+        self.phone_label.setStyleSheet(self.menu_input_style_sheet)
+        self.phone_label.setGeometry(button_x_offset, y_gap * 1.9 + button_height * 4.1, button_width, button_height)
+        self.phone_label.setEnabled(False)
+
         login = QPushButton("Already have an account ?", self)
-        login.setGeometry(button_x_offset, y_gap * 1.9 + button_height * 3.2, button_width, button_height)
+        login.setGeometry(button_x_offset, y_gap * 1.9 + button_height * 6, button_width, button_height)
         login.setStyleSheet(self.register_style_sheet)
         login.clicked.connect(self.login_page)
 
-        self.widgets = [self.username, self.password, login, title]
+        self.password_shower.stateChanged.connect(self.show_password)
+
+        self.widgets = [self.username, self.password, self.phone_slider, self.phone_label, login, title, self.password_shower]
         self.show_widgets()
+
+    def update_slider(self):
+
+        """
+        This function updates the phone number slider.
+        """
+
+        self.phone_label.setText("0" + str(self.phone_slider.value()))
 
     def register(self, username, password):
 
@@ -351,8 +564,9 @@ class mainGui(QWidget):
             salt = ''.join(random.sample(string.ascii_lowercase, 10))
 
             self.database.insertRow("credentials", username, hash_string(password + salt), salt)
-
-            self.course_selection()
+            self.database.insertRow("leaderboard", username, 0)
+            self.profile_name = username
+            self.main_menu()
 
         else:
             self.username.setStyleSheet(self.wrong_menu_input_style_sheet)
@@ -364,24 +578,30 @@ class mainGui(QWidget):
         """
 
         self.delete_current_widgets()
+
+        self.create_back_button(self.main_menu)
         self.temp_sh = self.sh / 0.75
 
 
-        self.create_course("variables",0, 0)
+        self.create_course("variables",0, -1)
+        self.create_course("imports", 1, -1)
+        self.create_course("time", 2, -1)
+        self.create_course("iteration", 3, -1)
+        self.create_course("code style", 4, -1)
+        self.create_course("arrays", 0, 0)
         self.create_course("functions", 1, 0)
-        self.create_course("classes", 2, 0)
-        self.create_course("recursion", 3, 0)
-        self.create_course("iteration", 4, 0)
-        self.create_course("web scraping", 0, 1)
-        self.create_course("imports", 1, 1)
-        self.create_course("time", 2, 1)
-        self.create_course("pygame", 3, 1)
-        self.create_course("open-cv", 4, 1)
-        self.create_course("objects", 0, -1)
-        self.create_course("inheritance", 1, -1)
-        self.create_course("code style", 2, -1)
-        self.create_course("comments", 3, -1)
-        self.create_course("sorting", 4, -1)
+        self.create_course("sorting", 2, 0)
+        self.create_course("classes", 3, 0)
+        self.create_course("objects", 4, 0)
+        self.create_course("pygame", 0, 1)
+        self.create_course("inheritance", 1, 1)
+        self.create_course("recursion", 2, 1)
+        self.create_course("webscraping", 3, 1)
+        self.create_course("challenge", 4, 1)
+
+        self.create_back_button(self.main_menu)
+
+        self.show_widgets()
 
     def create_course(self, course_name, col, row):
 
@@ -394,12 +614,11 @@ class mainGui(QWidget):
 
         course = QPushButton(course_name, self)
         course.setGeometry(col * button_width + (self.sw - (4.8 * button_width)) / 2,  # x
-                           row * button_width + (self.temp_sh * 1.5 - (5 * button_width)) / 2,  # y
+                           row * button_width + (self.temp_sh * 1.5 - (5 * button_width)) / 1.75,  # y
                            button_width / 1.2,  # width
                            button_width / 1.2)  # height
         course.setStyleSheet(self.course_button_style_sheets)
         course.clicked.connect(lambda: self.load_course(course_name))
-        course.setVisible(True)
         self.widgets.append(course)
 
     def load_course(self, course_name):
@@ -409,6 +628,7 @@ class mainGui(QWidget):
         """
 
         self.delete_current_widgets()
+        self.setMouseTracking(False)
 
         self.current_line = 0
         self.question = False
@@ -446,14 +666,13 @@ class mainGui(QWidget):
 
         run = QPushButton("Run",self)
         #run.setIcon(QIcon(self.root_path + "assets/run.jpg"))
-        run.setGeometry(4,
-                        self.temp_sh/2.5,
-                        self.sw/10 - 10,
-                        self.temp_sh/20)
+        run.setGeometry(self.sw - self.sw/10,
+                         self.sh / 1.75,
+                         self.sw/10 - 5,
+                         self.sh / 3)
         run.setStyleSheet(self.run_button_style_sheet)
         run.pressed.connect(self.run_code)
 
-        self.widgets.append(run)
         print(self.root_path + "courses/" + course_name)
 
         self.course = open(self.root_path + "courses/" + course_name, "r")
@@ -468,9 +687,43 @@ class mainGui(QWidget):
         self.display.setStyleSheet(self.display_style_sheet)
         self.display.setText(" \n" + self.course[0])
 
-        self.widgets = [run, self.back_button, self.next_button, self.tabs, title,
-                        self.code_writer, self.display, self.console]
+        self.widgets = [self.back_button, self.next_button, self.tabs, title,
+                        self.code_writer, self.display, self.console, run]
+        self.create_back_button(self.course_selection)
+        self.show_widgets()
 
+    def leaderboard(self):
+
+        """
+        This generates the leader board and displays it.
+        """
+
+        self.delete_current_widgets()
+        self.data = self.database.custom_query("SELECT username, score FROM leaderboard ORDER BY score DESC")
+
+        self.table = QTableWidget(self)
+
+        self.table.setRowCount(len(self.data) * 10)
+        self.table.setColumnCount(2)
+
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.Stretch)
+
+        for i in range(len(self.data)):
+            self.table.setItem(i,  0, QTableWidgetItem(self.data[i]["username"]))
+            self.table.setItem(i, 1, QTableWidgetItem(str(self.data[i]["score"])))
+
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table.setHorizontalHeaderLabels(["Username", "Score"])
+
+        self.table.setGeometry(self.sw / 10,
+                               self.sh / 10,
+                               (8 * self.sw) / 10,
+                               (8 * self.sh) / 10)
+
+        self.widgets = [self.table]
+        self.create_back_button(self.main_menu)
         self.show_widgets()
 
     def run_code(self):
@@ -540,7 +793,8 @@ class mainGui(QWidget):
 
             self.display.setText(" " + message)
         except IndexError:
-            self.display.setText(" " + "course complete")
+            self.database.increment("leaderboard", self.profile_name)
+            self.course_selection()
 
 
 class QCodeWidget(QPlainTextEdit):

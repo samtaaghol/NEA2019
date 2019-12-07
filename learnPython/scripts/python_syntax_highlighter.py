@@ -29,13 +29,13 @@ def format(color, style=''):
 STYLES = {
     'keyword': format('coral'),
     'operator': format('white'),
-    'brace': format('lightblue'),
-    'defclass': format('lightblue', 'bold'),
-    'string': format('green'),
-    'string2': format('green'),
-    'comment': format('yellow', 'italic'),
-    'self': format('blue', 'italic'),
-    'numbers': format('red'),
+    'brace': format('white'),
+    'defclass': format('aquamarine', 'bold'),
+    'string': format('forest'),
+    'string2': format('forest'),
+    'comment': format('gray', 'italic'),
+    'self': format('violet', 'italic'),
+    'numbers': format("lightblue"),
 }
 
 

@@ -1,5 +1,6 @@
 import pymysql
 
+
 class Database():
 
     """
@@ -21,8 +22,9 @@ class Database():
 
         self.primary_key = primary_key
 
-
     def setTable(self, table):
+
+        self.table_columns = []
 
         try:
             with self.connection.cursor() as cursor:
@@ -33,7 +35,6 @@ class Database():
 
                     self.table_columns.append(dictionary['Field'])
         except:
-
             print("incorrect table name.")
 
     def insertRow(self, table, *args):
@@ -41,7 +42,6 @@ class Database():
         self.setTable(table)
 
         if len(args) != len(self.table_columns):
-
             return False
 
         try:
@@ -60,6 +60,8 @@ class Database():
                     sql += "%s,"
 
                 sql = sql[:-1] + ")"
+
+                print(sql)
 
                 cursor.execute(sql, args)
 
@@ -85,8 +87,6 @@ class Database():
 
                 sql = "SELECT " + columns_to_return[:-1] + " FROM `" + table + "` WHERE `" + self.primary_key + "` = '" + key_value + "'"
 
-                print(sql)
-
                 cursor.execute(sql)
 
                 details = []
@@ -94,6 +94,42 @@ class Database():
                 return cursor.fetchone()
 
             self.connection.commit()
+
+        except pymysql.err.IntegrityError:
+
+            print('Wrong')
+
+    def increment(self, table, key):
+
+        try:
+            with self.connection.cursor() as cursor:
+
+                print("key : " + key)
+
+                sql = "UPDATE " + table + " SET score = score + 1 WHERE username = '" + key + "'"
+
+                print(sql)
+
+                cursor.execute(sql)
+
+                self.connection.commit()
+
+
+        except pymysql.err.IntegrityError:
+
+            print('Wrong')
+
+    def custom_query(self, sql):
+
+        try:
+            with self.connection.cursor() as cursor:
+
+                cursor.execute(sql)
+
+                self.connection.commit()
+
+                return cursor.fetchall()
+
 
         except pymysql.err.IntegrityError:
 
