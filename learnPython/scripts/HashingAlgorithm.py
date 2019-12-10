@@ -39,5 +39,4 @@ def hash_string(to_hash):
 
             temp_int = ""
 
-
     return hashed

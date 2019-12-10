@@ -406,12 +406,12 @@ class mainGui(QWidget):
         self.dijkstra = QPushButton("Dijkstras algorithm", self)
         self.dijkstra.setGeometry(button_x_offset, y_gap * 1.6 + button_height * 2, button_width , button_height)
         self.dijkstra.setStyleSheet(self.main_menu_button_style_sheet)
-        self.dijkstra.pressed.connect(self.eight_queens)
+        self.dijkstra.pressed.connect(self.eight_queens_test)
 
         self.bubble_sort = QPushButton("Bubble sort", self)
         self.bubble_sort.setGeometry(button_x_offset, y_gap * 1.8 + button_height * 3, button_width, button_height)
         self.bubble_sort.setStyleSheet(self.main_menu_button_style_sheet)
-        self.bubble_sort.pressed.connect(self.eight_queens)
+        self.bubble_sort.pressed.connect(self.eight_queens_test)
 
         self.widgets = [self.queens, self.dijkstra, self.bubble_sort]
         self.create_back_button(self.main_menu)
@@ -423,6 +423,8 @@ class mainGui(QWidget):
         This function sets up the eight queens lesson.
         """
 
+        self.delete_current_widgets()
+
         self.display = QTextEdit(self)
         self.display.setReadOnly(True)
         self.display.setGeometry(self.sw/15,
@@ -430,20 +432,27 @@ class mainGui(QWidget):
                                  self.sw - (self.sw / 7.5),
                                  self.sh / 1.5)
         self.display.setPlainText("Difficulty : 5  requires knowledge of functions, recursion, objects" +
-                                  "\n" + "The 8 queen problem involes putting 8 queens on the board where they each don't attack each other." +
+                                  "\n" + "\n" + "The 8 queen problem involes putting 8 queens on the board where they each don't attack each other." +
                                   "\n" + "\n" + "The queen can move diagonally and horizontally/vertically" +
                                   "\n" + "\n" +  "The chess board is 8x8." +
                                   "\n" + "\n" +  "Here is a simulation of the Recursive algorithm I wrote. You will then asked" +
                                   "\n" + "questions about the code which will be provide.")
 
+        next = QPushButton("Next", self)
+        next.setGeometry(self.sw - self.sw/10 - 5,
+                         5,
+                         self.sw / 10,
+                         self.sh / 20)
+        next.setStyleSheet(self.main_menu_button_style_sheet)
+        next.pressed.connect(self.eight_queens_sim)
 
         self.display.setStyleSheet(self.display_style_sheet)
 
-        self.widgets = [self.display]
-
+        self.widgets = [self.display, next]
+        self.create_back_button(self.examples_menu)
         self.show_widgets()
 
-    def eight_queens(self):
+    def eight_queens_sim(self):
 
         self.delete_current_widgets()
 
@@ -452,30 +461,47 @@ class mainGui(QWidget):
         except pygame.error:
             pass
 
-        code = QCodeWidget(self)
-        code.setPlainText("""    def recursivley_solve(self):
-        for x in range(8):
-            for y in range(8):
-                if not self.game.in_check(x, y):
-                    # choose
-                    self.game.add_queen(x, y)
+        next = QPushButton("Next", self)
+        next.setGeometry(self.sw - self.sw / 10 - 5,
+                         5,
+                         self.sw / 10,
+                         self.sh / 20)
+        next.setStyleSheet(self.main_menu_button_style_sheet)
+        next.pressed.connect(self.eight_queens_code)
 
-                    self.board_positions.append(str(self.game.board))
-                    # explore
-                    self.recursivley_solve()
-                    if self.game.queen_count == 8:
-                        return
-                    # unchoose
-                    self.game.remove_queen(x, y)""")
-        code.setGeometry(self.sw/15,
-                         self.sh/7,
-                         self.sw - (self.sw / 7.5),
-                         self.sh / 1.5)
-
-        self.widgets = [code, self.display]
+        self.widgets = [self.display, next]
         self.create_back_button(self.examples_menu)
         self.show_widgets()
 
+    def eight_queens_code(self):
+
+        self.delete_current_widgets()
+
+        code = QCodeWidget(self)
+
+        code.setPlainText("""    def recursivley_solve(self):
+               for x in range(8):
+                   for y in range(8):
+                       if not self.game.in_check(x, y):
+                           # choose
+                           self.game.add_queen(x, y)
+
+                           self.board_positions.append(str(self.game.board))
+                           # explore
+                           self.recursivley_solve()
+                           if self.game.queen_count == 8:
+                               return
+                           # unchoose
+                           self.game.remove_queen(x, y)""")
+
+        code.setGeometry(self.sw / 15,
+                         self.sh / 7,
+                         self.sw - (self.sw / 7.5),
+                         self.sh / 1.5)
+
+        self.widgets = [code]
+        self.create_back_button(self.eight_queens_sim)
+        self.show_widgets()
 
     def registration(self):
 
@@ -557,7 +583,6 @@ class mainGui(QWidget):
 
         if len(password) < 8:
             self.username.setStyleSheet(self.wrong_menu_input_style_sheet)
-
 
         if not self.database.getDetails("credentials", username):
 
